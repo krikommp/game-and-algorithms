@@ -80,7 +80,7 @@ public:
 		};
 
 		// 鼠标点击选中圆
-		if (GetMouse(0).bPressed) {
+		if (GetMouse(0).bPressed || GetMouse(1).bPressed) {
 			pCurrentSelectedBall = nullptr;
 			for (auto& ball : vecBalls) {
 				if (IsPointInCircle(ball.px, ball.py, ball.radius, GetMouseX(), GetMouseY())) {
@@ -103,11 +103,21 @@ public:
 			pCurrentSelectedBall = nullptr;
 		}
 
+		if (GetMouse(1).bReleased) {
+			if (pCurrentSelectedBall != nullptr) {
+				pCurrentSelectedBall->vx = 5.f * ((pCurrentSelectedBall->px) - (float)GetMouseX());
+				pCurrentSelectedBall->vy = 5.f * ((pCurrentSelectedBall->py) - (float)GetMouseY());
+			}
+			pCurrentSelectedBall = nullptr;
+		}
+
 		// 碰撞记录
 		vector<pair<sBall*, sBall*>> vecCollidingPairs; 
 
 		// 更新小球位置
 		for (auto& ball : vecBalls) {
+			ball.ax = -ball.vx * 0.8f;
+			ball.ay = -ball.vy * 0.8f;
 			ball.vx += ball.ax * fElapsedTime;
 			ball.vy += ball.ay * fElapsedTime;
 			ball.px += ball.vx * fElapsedTime;
@@ -116,7 +126,7 @@ public:
 			// 边界判断
 			if (ball.px < 0) ball.px += float(ScreenWidth());
 			if (ball.px >= ScreenWidth()) ball.px -= float(ScreenWidth());
-			if (ball.py < 0) ball.px += float(ScreenHeight());
+			if (ball.py < 0) ball.py += float(ScreenHeight());
 			if (ball.py >= ScreenHeight()) ball.py -= float(ScreenHeight());
 		}
 
@@ -151,6 +161,10 @@ public:
 
 		for (auto c : vecCollidingPairs) {
 			DrawLine(c.first->px, c.first->py, c.second->px, c.second->py, olc::RED);
+		}
+
+		if (pCurrentSelectedBall != nullptr) {
+			DrawLine(pCurrentSelectedBall->px, pCurrentSelectedBall->py, GetMouseX(), GetMouseY(), olc::YELLOW);
 		}
 
 		return true;
